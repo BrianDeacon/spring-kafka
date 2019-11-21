@@ -67,12 +67,13 @@ public abstract class AbstractMessageListenerContainer<K, V>
 	 * containers {@value #DEFAULT_PHASE}.
 	 */
 	public static final int DEFAULT_PHASE = Integer.MAX_VALUE - 100; // late phase
+	protected static final String UNUSED = "unused";
 
 	private static final int DEFAULT_TOPIC_CHECK_TIMEOUT = 30;
 
 	protected final LogAccessor logger = new LogAccessor(LogFactory.getLog(this.getClass())); // NOSONAR
 
-	protected final ConsumerFactory<K, V> consumerFactory; // NOSONAR (final)
+	private final ConsumerFactory<K, V> consumerFactory; // NOSONAR (final)
 
 	private final ContainerProperties containerProperties;
 
@@ -274,7 +275,7 @@ public abstract class AbstractMessageListenerContainer<K, V>
 	@Override
 	public String getGroupId() {
 		return this.containerProperties.getGroupId() == null
-				? (String) this.consumerFactory.getConfigurationProperties().get(ConsumerConfig.GROUP_ID_CONFIG)
+				? (String) this.getConsumerFactory().getConfigurationProperties().get(ConsumerConfig.GROUP_ID_CONFIG)
 				: this.containerProperties.getGroupId();
 	}
 
@@ -327,7 +328,7 @@ public abstract class AbstractMessageListenerContainer<K, V>
 
 	protected void checkTopics() {
 		if (this.containerProperties.isMissingTopicsFatal() && this.containerProperties.getTopicPattern() == null) {
-			Map<String, Object> configs = this.consumerFactory.getConfigurationProperties()
+			Map<String, Object> configs = this.getConsumerFactory().getConfigurationProperties()
 					.entrySet()
 					.stream()
 					.filter(entry -> AdminClientConfig.configNames().contains(entry.getKey()))
@@ -373,8 +374,8 @@ public abstract class AbstractMessageListenerContainer<K, V>
 	public void checkGroupId() {
 		if (this.containerProperties.getTopicPartitionsToAssign() == null) {
 			boolean hasGroupIdConsumerConfig = true; // assume true for non-standard containers
-			if (this.consumerFactory != null) { // we always have one for standard containers
-				Object groupIdConfig = this.consumerFactory.getConfigurationProperties()
+			if (this.getConsumerFactory() != null) { // we always have one for standard containers
+				Object groupIdConfig = this.getConsumerFactory().getConfigurationProperties()
 						.get(ConsumerConfig.GROUP_ID_CONFIG);
 				hasGroupIdConsumerConfig =
 						groupIdConfig instanceof String && StringUtils.hasText((String) groupIdConfig);
@@ -467,4 +468,7 @@ public abstract class AbstractMessageListenerContainer<K, V>
 		return this;
 	}
 
+  ConsumerFactory<K, V> getConsumerFactory() {
+    return consumerFactory;
+  }
 }

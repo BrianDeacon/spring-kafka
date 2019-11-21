@@ -147,10 +147,10 @@ public class ConcurrentMessageListenerContainer<K, V> extends AbstractMessageLis
 			for (int i = 0; i < this.concurrency; i++) {
 				KafkaMessageListenerContainer<K, V> container;
 				if (topicPartitions == null) {
-					container = new KafkaMessageListenerContainer<>(this, this.consumerFactory, containerProperties);
+					container = new KafkaMessageListenerContainer<>(this, this.getConsumerFactory(), containerProperties);
 				}
 				else {
-					container = new KafkaMessageListenerContainer<>(this, this.consumerFactory,
+					container = new KafkaMessageListenerContainer<>(this, this.getConsumerFactory(),
 							containerProperties, partitionSubset(containerProperties, i));
 				}
 				String beanName = getBeanName();
